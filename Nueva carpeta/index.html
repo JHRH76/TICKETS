@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NewTickets - Login & Register</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white p-8 rounded-2xl shadow-xl w-96">
+    <h2 class="text-2xl font-bold text-center mb-6">NewTickets</h2>
+    <div id="form-container">
+      <input type="email" id="email" placeholder="Correo electrónico" class="w-full p-2 mb-4 border rounded-lg">
+      <input type="password" id="password" placeholder="Contraseña" class="w-full p-2 mb-4 border rounded-lg">
+      <button onclick="login()" class="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600">Iniciar sesión</button>
+      <p class="text-center mt-4">¿No tienes cuenta? <a href="#" onclick="toggleForm()" class="text-blue-500">Regístrate</a></p>
+    </div>
+    <div id="register-container" class="hidden">
+      <input type="text" id="name" placeholder="Nombre completo" class="w-full p-2 mb-4 border rounded-lg">
+      <input type="email" id="reg-email" placeholder="Correo electrónico" class="w-full p-2 mb-4 border rounded-lg">
+      <input type="password" id="reg-password" placeholder="Contraseña" class="w-full p-2 mb-4 border rounded-lg">
+      <button onclick="register()" class="w-full bg-green-500 text-white p-2 rounded-lg hover:bg-green-600">Registrarse</button>
+      <p class="text-center mt-4">¿Ya tienes cuenta? <a href="#" onclick="toggleForm()" class="text-blue-500">Inicia sesión</a></p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyApny_bRVGRX4AzKTA1ADycZeCIdB9uHb0",
+      authDomain: "newtickets-b4c94.firebaseapp.com",
+      projectId: "newtickets-b4c94",
+      storageBucket: "newtickets-b4c94.firebasestorage.app",
+      messagingSenderId: "819124462837",
+      appId: "1:819124462837:web:62396249ef9abfb8dad1bc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+
+    window.toggleForm = function() {
+      document.getElementById('form-container').classList.toggle('hidden');
+      document.getElementById('register-container').classList.toggle('hidden');
+    }
+
+    window.register = async function() {
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        alert('Registro exitoso');
+        toggleForm();
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    window.login = async function() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        alert('Inicio de sesión exitoso');
+        window.location.href = 'dashboard.html';
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+  </script>
+</body>
+</html>

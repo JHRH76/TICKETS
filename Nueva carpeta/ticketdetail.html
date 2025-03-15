@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalle de Ticket - NewTickets</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold text-center mb-6">Detalle de Ticket</h1>
+    <div id="ticketDetails" class="bg-white p-6 rounded-2xl shadow-lg mb-6"></div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-lg">
+      <h2 class="text-2xl font-semibold mb-4">Comentarios</h2>
+      <div id="comments" class="mb-4"></div>
+      <textarea id="commentText" placeholder="Escribe un comentario..." class="w-full p-2 mb-4 border rounded-lg"></textarea>
+      <button onclick="addComment()" class="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600">Agregar Comentario</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyApny_bRVGRX4AzKTA1ADycZeCIdB9uHb0",
+      authDomain: "newtickets-b4c94.firebaseapp.com",
+      projectId: "newtickets-b4c94",
+      storageBucket: "newtickets-b4c94.firebasestorage.app",
+      messagingSenderId: "819124462837",
+      appId: "1:819124462837:web:62396249ef9abfb8dad1bc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const ticketId = urlParams.get('id');
+
+    async function loadTicketDetails() {
+      const ticketDoc = await getDoc(doc(db, 'tickets', ticketId));
+      if (ticketDoc.exists()) {
+        const ticket = ticketDoc.data();
+        document.getElementById('ticketDetails').innerHTML = `
+          <h2 class="text-2xl font-bold">${ticket.title}</h2>
+          <p>${ticket.description}</p>
+          <span class="text-sm text-gray-500">Prioridad: ${ticket.priority} | Estado: ${ticket.status}</span>
+        `;
+        loadComments();
+      } else {
+        alert('El ticket no existe');
+      }
+    }
+
+    async function loadComments() {
+      const commentsContainer = document.getElementById('comments');
+      commentsContainer.innerHTML = '';
+      const commentsQuery = query(collection(db, 'comments'), where('ticketId', '==', ticketId));
+      const querySnapshot = await getDocs(commentsQuery);
+
+      querySnapshot.forEach(doc => {
+        const comment = doc.data();
+        const commentElement = document.createElement('div');
+        commentElement.className = 'bg-gray-100 p-4 rounded-lg mb-2';
+        commentElement.innerHTML = `
+          <p>${comment.text}</p>
+          <span class="text-sm text-gray-500">${comment.createdAt}</span>
+        `;
+        commentsContainer.appendChild(commentElement);
+      });
+    }
+
+    async function addComment() {
+      const commentText = document.getElementById('commentText').value;
+      if (commentText) {
+        try {
+          await addDoc(collection(db, 'comments'), {
+            ticketId,
+            text: commentText,
+            createdAt: new Date().toISOString()
+          });
+          document.getElementById('commentText').value = '';
+          loadComments();
+        } catch (error) {
+          alert('Error al agregar el comentario: ' + error.message);
+        }
+      } else {
+        alert('Por favor, escribe un comentario');
+      }
+    }
+
+    loadTicketDetails();
+  </script>
+</body>
+</html>

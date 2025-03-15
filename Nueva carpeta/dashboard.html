@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NewTickets - Dashboard</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold text-center mb-6">Dashboard - NewTickets</h1>
+    <div class="grid grid-cols-3 gap-4">
+      <div class="bg-white p-6 rounded-2xl shadow-lg">
+        <h2 class="text-xl font-semibold">Tickets Abiertos</h2>
+        <p id="openTickets" class="text-4xl font-bold text-blue-500">0</p>
+      </div>
+      <div class="bg-white p-6 rounded-2xl shadow-lg">
+        <h2 class="text-xl font-semibold">Tickets en Proceso</h2>
+        <p id="inProgressTickets" class="text-4xl font-bold text-yellow-500">0</p>
+      </div>
+      <div class="bg-white p-6 rounded-2xl shadow-lg">
+        <h2 class="text-xl font-semibold">Tickets Cerrados</h2>
+        <p id="closedTickets" class="text-4xl font-bold text-green-500">0</p>
+      </div>
+    </div>
+    <div class="text-center mt-8">
+      <a href="tickets.html" class="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-600">Ver Tickets</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyApny_bRVGRX4AzKTA1ADycZeCIdB9uHb0",
+      authDomain: "newtickets-b4c94.firebaseapp.com",
+      projectId: "newtickets-b4c94",
+      storageBucket: "newtickets-b4c94.firebasestorage.app",
+      messagingSenderId: "819124462837",
+      appId: "1:819124462837:web:62396249ef9abfb8dad1bc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadTicketStats() {
+      const querySnapshot = await getDocs(collection(db, 'tickets'));
+      let open = 0, inProgress = 0, closed = 0;
+
+      querySnapshot.forEach(doc => {
+        const ticket = doc.data();
+        if (ticket.status === 'abierto') open++;
+        if (ticket.status === 'en proceso') inProgress++;
+        if (ticket.status === 'cerrado') closed++;
+      });
+
+      document.getElementById('openTickets').innerText = open;
+      document.getElementById('inProgressTickets').innerText = inProgress;
+      document.getElementById('closedTickets').innerText = closed;
+    }
+
+    loadTicketStats();
+  </script>
+</body>
+</html>
