@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NewTickets - Tickets</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold text-center mb-6">Gestión de Tickets</h1>
+    <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
+      <h2 class="text-2xl font-semibold mb-4">Crear Nuevo Ticket</h2>
+      <input type="text" id="title" placeholder="Título" class="w-full p-2 mb-4 border rounded-lg">
+      <textarea id="description" placeholder="Descripción" class="w-full p-2 mb-4 border rounded-lg"></textarea>
+      <select id="priority" class="w-full p-2 mb-4 border rounded-lg">
+        <option value="baja">Baja</option>
+        <option value="media">Media</option>
+        <option value="alta">Alta</option>
+      </select>
+      <button onclick="createTicket()" class="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600">Crear Ticket</button>
+    </div>
+    <div id="tickets-container" class="grid gap-4"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyApny_bRVGRX4AzKTA1ADycZeCIdB9uHb0",
+      authDomain: "newtickets-b4c94.firebaseapp.com",
+      projectId: "newtickets-b4c94",
+      storageBucket: "newtickets-b4c94.firebasestorage.app",
+      messagingSenderId: "819124462837",
+      appId: "1:819124462837:web:62396249ef9abfb8dad1bc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function createTicket() {
+      const title = document.getElementById('title').value;
+      const description = document.getElementById('description').value;
+      const priority = document.getElementById('priority').value;
+
+      if (title && description) {
+        try {
+          await addDoc(collection(db, 'tickets'), {
+            title,
+            description,
+            priority,
+            status: 'abierto',
+            createdAt: new Date().toISOString()
+          });
+          alert('Ticket creado con éxito');
+          loadTickets();
+        } catch (error) {
+          alert('Error al crear el ticket: ' + error.message);
+        }
+      } else {
+        alert('Por favor, completa todos los campos');
+      }
+    }
+
+    async function loadTickets() {
+      const ticketsContainer = document.getElementById('tickets-container');
+      ticketsContainer.innerHTML = '';
+      const querySnapshot = await getDocs(collection(db, 'tickets'));
+
+      querySnapshot.forEach(doc => {
+        const ticket = doc.data();
+        const ticketElement = document.createElement('div');
+        ticketElement.className = 'bg-white p-4 rounded-lg shadow-md';
+        ticketElement.innerHTML = `
+          <h3 class="text-xl font-bold">${ticket.title}</h3>
+          <p>${ticket.description}</p>
+          <span class="text-sm text-gray-500">Prioridad: ${ticket.priority} | Estado: ${ticket.status}</span>
+        `;
+        ticketsContainer.appendChild(ticketElement);
+      });
+    }
+
+    loadTickets();
+  </script>
+</body>
+</html>

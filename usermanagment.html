@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administración de Usuarios - NewTickets</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold text-center mb-6">Administración de Usuarios</h1>
+    <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
+      <h2 class="text-2xl font-semibold mb-4">Registrar Nuevo Usuario</h2>
+      <input type="email" id="email" placeholder="Correo electrónico" class="w-full p-2 mb-4 border rounded-lg">
+      <input type="password" id="password" placeholder="Contraseña" class="w-full p-2 mb-4 border rounded-lg">
+      <select id="role" class="w-full p-2 mb-4 border rounded-lg">
+        <option value="usuario">Usuario</option>
+        <option value="admin">Administrador</option>
+      </select>
+      <button onclick="registerUser()" class="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600">Registrar Usuario</button>
+    </div>
+
+    <div id="users-container" class="grid gap-4"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyApny_bRVGRX4AzKTA1ADycZeCIdB9uHb0",
+      authDomain: "newtickets-b4c94.firebaseapp.com",
+      projectId: "newtickets-b4c94",
+      storageBucket: "newtickets-b4c94.firebasestorage.app",
+      messagingSenderId: "819124462837",
+      appId: "1:819124462837:web:62396249ef9abfb8dad1bc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    async function registerUser() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const role = document.getElementById('role').value;
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await addDoc(collection(db, 'users'), {
+          uid: userCredential.user.uid,
+          email,
+          role
+        });
+        alert('Usuario registrado con éxito');
+        loadUsers();
+      } catch (error) {
+        alert('Error al registrar usuario: ' + error.message);
+      }
+    }
+
+    async function loadUsers() {
+      const usersContainer = document.getElementById('users-container');
+      usersContainer.innerHTML = '';
+      const querySnapshot = await getDocs(collection(db, 'users'));
+
+      querySnapshot.forEach(doc => {
+        const user = doc.data();
+        const userElement = document.createElement('div');
+        userElement.className = 'bg-white p-4 rounded-lg shadow-md';
+        userElement.innerHTML = `
+          <p>${user.email}</p>
+          <span class="text-sm text-gray-500">Rol: ${user.role}</span>
+        `;
+        usersContainer.appendChild(userElement);
+      });
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>

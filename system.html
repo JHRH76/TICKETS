@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuración del Sistema - NewTickets</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold text-center mb-6">Configuración del Sistema</h1>
+
+    <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
+      <h2 class="text-2xl font-semibold mb-4">Estados de Tickets</h2>
+      <input type="text" id="newStatus" placeholder="Nuevo Estado" class="w-full p-2 mb-4 border rounded-lg">
+      <button onclick="addStatus()" class="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600">Agregar Estado</button>
+      <ul id="statusList" class="mt-4"></ul>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-lg">
+      <h2 class="text-2xl font-semibold mb-4">Niveles de Prioridad</h2>
+      <input type="text" id="newPriority" placeholder="Nueva Prioridad" class="w-full p-2 mb-4 border rounded-lg">
+      <button onclick="addPriority()" class="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600">Agregar Prioridad</button>
+      <ul id="priorityList" class="mt-4"></ul>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyApny_bRVGRX4AzKTA1ADycZeCIdB9uHb0",
+      authDomain: "newtickets-b4c94.firebaseapp.com",
+      projectId: "newtickets-b4c94",
+      storageBucket: "newtickets-b4c94.firebasestorage.app",
+      messagingSenderId: "819124462837",
+      appId: "1:819124462837:web:62396249ef9abfb8dad1bc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function addStatus() {
+      const newStatus = document.getElementById('newStatus').value;
+      if (newStatus) {
+        await addDoc(collection(db, 'statuses'), { name: newStatus });
+        document.getElementById('newStatus').value = '';
+        loadStatuses();
+      }
+    }
+
+    async function addPriority() {
+      const newPriority = document.getElementById('newPriority').value;
+      if (newPriority) {
+        await addDoc(collection(db, 'priorities'), { name: newPriority });
+        document.getElementById('newPriority').value = '';
+        loadPriorities();
+      }
+    }
+
+    async function loadStatuses() {
+      const statusList = document.getElementById('statusList');
+      statusList.innerHTML = '';
+      const querySnapshot = await getDocs(collection(db, 'statuses'));
+      querySnapshot.forEach(doc => {
+        const status = doc.data();
+        const li = document.createElement('li');
+        li.textContent = status.name;
+        li.className = 'bg-gray-200 p-2 rounded-lg mb-2';
+        statusList.appendChild(li);
+      });
+    }
+
+    async function loadPriorities() {
+      const priorityList = document.getElementById('priorityList');
+      priorityList.innerHTML = '';
+      const querySnapshot = await getDocs(collection(db, 'priorities'));
+      querySnapshot.forEach(doc => {
+        const priority = doc.data();
+        const li = document.createElement('li');
+        li.textContent = priority.name;
+        li.className = 'bg-gray-200 p-2 rounded-lg mb-2';
+        priorityList.appendChild(li);
+      });
+    }
+
+    loadStatuses();
+    loadPriorities();
+  </script>
+</body>
+</html>
